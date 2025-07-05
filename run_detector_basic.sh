@@ -1,6 +1,7 @@
 #!/bin/bash
 
-model="gptzero"
+#model="gptzero"
+model="chatgpt-roberta"
 
 python detect_cli.py -m "$model" -d "data/merged_mgt_hwt_data.csv" -o "results/${model}/mgt_hwt_predictions.json"
 

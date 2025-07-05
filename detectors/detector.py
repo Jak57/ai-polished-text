@@ -1,5 +1,5 @@
 # from .models.binoculars.binoculars import Binoculars
-# from .models.chatgpt_roberta_detector.chatgpt_detector import ChatGPTDetector
+from .models.chatgpt_roberta_detector.chatgpt_detector import ChatGPTDetector
 # from .models.detectgpt.detectgpt import DetectGPT
 # from .models.fast_detectgpt.fast_detectgpt import FastDetectGPT
 # from .models.gltr.gltr import GLTR
@@ -7,7 +7,7 @@
 # from .models.gptzero.gptzero import GPTZero
 # from .models.llmdet.llmdet import LLMDet
 # from .models.originality_ai.originality_ai import OriginalityAI
-from .models.pangram.pangram import Pangram
+#from .models.pangram.pangram import Pangram
 # from .models.radar.radar import Radar
 # from .models.winston_ai.winston_ai import WinstonAI
 # from .models.zerogpt.zerogpt import ZeroGPT

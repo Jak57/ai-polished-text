@@ -167,7 +167,6 @@ dependencies:
       - twine==6.1.0
       - typing-extensions==4.12.2
       - tzdata==2025.1
-      - unilm==0.0.1
       - urllib3==2.3.0
       - userpath==1.9.2
       - uv==0.5.26
