@@ -8,7 +8,32 @@ def get_message_template_for_degree_based_polishing(text, model_type="llama", po
     """
     Gets the message template for the degree-bashed polishing.
     """
-    print(len(text), model_type, polish_type)
+    type_to_name = {
+        "extreme_minor" : "extremely minor",
+        "minor"         : "minor",
+        "slight_major"  : "slight major",
+        "major"         : "major"
+    }
+
+    if model_type == "llama2":
+        return [
+            {
+                "role": "system",
+                "content": "You are a helpful chatbot who always responds with helpful information. You are asked to provide a polished version of an original text. Only generate the polished text.\n"
+            },
+            {
+                "role": "user",
+                "content": f"Polish the given original text below with {type_to_name[polish_type]} polishing. The difference between original and polished text must be {type_to_name[polish_type]}. The semantic meaning of polished text must be the same as original text. Just output the polished text, nothing else. The given original text:\n\"{text}\""
+            }
+        ]
+
+
+def generate_response(model, tokenizer, message, max_new_tokens=100):
+    """
+    Generate a response to a given message using the model and tokenizer.
+    message: a dict with 'role' and 'content' keys so that chat templates can be applied.
+    """
+    pass
 
 
 def polish_text(data, editing_type, polish_type, polish_ratio, model_name, model_type, model, tokenizer):
@@ -24,6 +49,11 @@ def polish_text(data, editing_type, polish_type, polish_ratio, model_name, model
             pass
         elif editing_type == DEGREE_BASED_POLISHING_TYPE:
             message = get_message_template_for_degree_based_polishing(text, model_type, polish_type)
+
+        if message == None:
+            continue
+        if model_type == "llama2":
+            pass
 
 
 def get_model_and_tokenizer(model_path):
@@ -59,7 +89,8 @@ def main():
         for polish_type in polish_type_list:
             print(f"Processing for polish type: {polish_type} ...")
             polish_text(data, DEGREE_BASED_POLISHING_TYPE, polish_type, None, model_name, model_type, model, tokenizer)
-    
+
+
     gc.collect()
     torch.cuda.empty_cache()
 
