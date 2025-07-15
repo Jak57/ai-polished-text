@@ -1,7 +1,21 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import os
+os.environ["FLASH_ATTENTION_FORCE_DISABLE"] = "1"
+os.environ["DISABLE_FLASH_ATTN"] = "1"
+
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, AutoConfig
 import pandas as pd
 import torch
 import gc
+
+# import os
+# os.environ["FLASH_ATTENTION_FORCE_DISABLE"] = "1"
+
+
+def get_length_of_text(text):
+    """
+    Counts the number of words in the text.
+    """
+    return len(text.split())
 
 
 def get_message_template_for_degree_based_polishing(text, model_type="llama", polish_type="extremely minor"):
@@ -27,13 +41,129 @@ def get_message_template_for_degree_based_polishing(text, model_type="llama", po
             }
         ]
 
-
 def generate_response(model, tokenizer, message, max_new_tokens=100):
     """
     Generate a response to a given message using the model and tokenizer.
     message: a dict with 'role' and 'content' keys so that chat templates can be applied.
     """
-    pass
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = "left"
+
+    
+    try:
+        # Attempt to use `apply_chat_template` (preferred for chat models)
+        encodings = tokenizer.apply_chat_template(
+            message,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            padding=True,  # Ensure uniform input size
+            truncation=True
+        )
+
+        if isinstance(encodings, dict):
+            input_ids = encodings["input_ids"].to(model.device)
+            attention_mask = encodings["attention_mask"].to(model.device)
+        else:
+            input_ids = encodings.to(model.device)
+            attention_mask = torch.ones_like(input_ids, dtype=torch.long).to(model.device)  # Fallback mask
+
+    except:
+        input_ids = tokenizer.encode(message, return_tensors="pt").to(model.device)
+
+    # Handle LLaMA and other models' stop tokens
+    if 'llama' in model.config.model_type:
+        terminators = [
+            tokenizer.eos_token_id,
+            tokenizer.convert_tokens_to_ids("<|eot_id|>")
+        ]
+    else:
+        terminators = tokenizer.eos_token_id
+    
+    if attention_mask is not None:
+        outputs = model.generate(
+            input_ids,
+            attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens,
+            eos_token_id=terminators,
+            # pad_token_id=pad_token_id,
+            pad_token_id=tokenizer.pad_token_id,
+
+            do_sample=True,
+            temperature=0.6,
+            top_p=0.9,
+        )
+    else:
+        outputs = model.generate(
+            input_ids,
+            max_new_tokens=max_new_tokens,
+            eos_token_id=terminators,
+            do_sample=True,
+            temperature=0.6,
+            top_p=0.9,
+        )
+
+    response = outputs[0][input_ids.shape[-1]:]
+    response_text = tokenizer.decode(response, skip_special_tokens=True)
+
+    print("message:", message)
+    print("response:", response_text)
+    print("\n\n")
+    return response_text
+
+
+def generate_response2(model, tokenizer, message, max_new_tokens=100):
+    """
+    Generate a response to a given message using the model and tokenizer.
+    message: a dict with 'role' and 'content' keys so that chat templates can be applied.
+    """
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = "left"
+
+    try:
+        # Attempt to use `apply_chat_template` (preferred for chat models)
+        encodings = tokenizer.apply_chat_template(
+            message,
+            add_generation_prompt=True,
+            return_tensors="pt",
+            padding=True,
+            truncation=True
+        )
+        
+        if isinstance(encodings, dict):
+            input_ids = encodings["input_ids"].to(model.device)
+            attention_mask = encodings["attention_mask"].to(model.device)
+        else:
+            input_ids = encodings.to(model.device)
+            attention_mask = torch.ones_like(input_ids, dtype=torch.long).to(model.device) # Fallback mass
+    except:
+        input_ids = tokenizer.encode(message, return_tensors="pt").to(model.device)
+
+    # Handle LLaMa and other model's stop tokens
+    if 'llama' in model.config.model_type:
+        terminators = [
+            tokenizer.eos_token_id,
+            tokenizer.convert_tokens_to_ids("<|eot_id|>") # End of turn 
+        ]
+        # print("------------> ", terminators)
+
+    if attention_mask is not None:
+        outputs = model.generate(
+            input_ids,
+            attention_mask=attention_mask,
+            max_new_tokens=max_new_tokens,
+            eos_token_id=terminators,
+            pad_token_id=tokenizer.pad_token_id,
+            do_sample=True,
+            temperature=0.6,
+            top_p=0.9
+        )
+        print(f"attention mask is {attention_mask}")
+        print(f"output is {outputs}")
+    else:
+        # TODO
+        pass
 
 
 def polish_text(data, editing_type, polish_type, polish_ratio, model_name, model_type, model, tokenizer):
@@ -53,15 +183,48 @@ def polish_text(data, editing_type, polish_type, polish_ratio, model_name, model
         if message == None:
             continue
         if model_type == "llama2":
-            pass
+            # pass
+            response = generate_response(model, tokenizer, message, get_length_of_text(text)*1.5)
 
 
 def get_model_and_tokenizer(model_path):
     """
     Loads model and tokenizer.
     """
+
+#     bnb_config = BitsAndBytesConfig(
+#     load_in_8bit=True,  # or load_in_4bit=True
+#     llm_int8_threshold=6.0,
+# )
+
+# tokenizer = AutoTokenizer.from_pretrained(model_path)
+# model = AutoModelForCausalLM.from_pretrained(
+#     model_path,
+#     device_map="auto",
+#     quantization_config=bnb_config,
+# )
+
+    config = AutoConfig.from_pretrained(model_path)
+    config._attn_implementation = "eager"
+
+    bnb_config = BitsAndBytesConfig(
+        load_in_8bit=True,
+        llm_int8_threshold=6.0
+    )
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    model = AutoModelForCausalLM.from_pretrained(model_path, device_map='auto', torch_dtype=torch.float16)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        config=config,
+        device_map="auto",
+        torch_dtype=torch.float16
+    )
+
+            # torch_dtype
+        # quantization_config=bnb_config
+
+
+    # tokenizer = AutoTokenizer.from_pretrained(model_path)
+    # model = AutoModelForCausalLM.from_pretrained(model_path, device_map='auto', torch_dtype=torch.float32)
     return model, tokenizer
 
 
