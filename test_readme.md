@@ -145,10 +145,10 @@ Running the above mentioned commands will generate result files under the `resul
 If you use our code or findings in your research, please cite us as:
 
 ```
-@article{saha2025almost,
-  title={Almost AI, Almost Human: The Challenge of Detecting AI-Polished Writing},
-  author={Saha, Shoumik and Feizi, Soheil},
-  journal={arXiv preprint arXiv:2502.15666},
+@article{hasan2025banglatalk,
+  title={BanglaTalk: Towards Real-Time Speech Assistance for Bengali Regional Dialects},
+  author={Hasan, Jakir and Dipta, Shubhashis Roy},
+  journal={arXiv preprint arXiv:2510.06188},
   year={2025}
 }
 ```
