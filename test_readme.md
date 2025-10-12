@@ -1,5 +1,5 @@
-# APT-Eval 
-This repository is the implementation of the paper ['Almost AI, Almost Human: The Challenge of Detecting AI-Polished Writing'](https://arxiv.org/abs/2502.15666).
+# BanglaTalk
+This repository is the implementation of the paper ['BanglaTalk: Towards Real-Time Speech Assistance for Bengali Regional Dialects'](https://arxiv.org/abs/2510.06188).
 
 ## Dataset Overview
 
