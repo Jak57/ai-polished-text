@@ -1,6 +1,26 @@
 # BanglaTalk
 This repository is the implementation of the paper ['BanglaTalk: Towards Real-Time Speech Assistance for Bengali Regional Dialects'](https://arxiv.org/abs/2510.06188).
 
+## Table of Contents
+* [Setup Client Environment](#setup-client-environment)
+* [Download BRDialect ASR Model](#download-brdialect-asr-model)
+* [Download VITS TTS Model](#download-vits-tts-model)
+* [Setup Server Environment](#setup-server-environment)
+
+## Setup Client Environment
+Todo
+
+## Download BRDialect ASR Model
+Todo
+
+## Download VITS TTS Model
+Todo
+
+## Setup Server Environment
+Todo
+
+
+  
 <!--
 ## Dataset Overview
 
@@ -138,9 +158,14 @@ If you want to automate the running for all polish-type (degree-based) with all 
 
 Running the above mentioned commands will generate result files under the `results/model_name` directory. However, we have already provided all the results (from our paper) there. Feel free to use/extend them, and extract more insights out of them. 
 
--->
 
 *This codebase was built upon the [RAID](https://github.com/liamdugan/raid) repo.  
+
+-->
+
+## BRDialect ASR System
+The **BRDialect** ASR model is now available in HuggingFace.<br>
+Link: https://huggingface.co/Jakir057/BRDialect
 
 ## Citation
 
